@@ -16,5 +16,7 @@ dist/
 *.jpg
 *.jpeg
 *.png
+!show/
+!show/*.png
 covers/
 logs/
