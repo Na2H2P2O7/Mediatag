@@ -101,7 +101,7 @@ class Api:
     def _run_batch(self, files: list[str], run_faststart: bool) -> None:
         self._eval("window.resetUi()")
         if not self.credentials.is_configured:
-            self._eval("window.appendLog('Missing TMDb credentials. Set TMDB_BEARER_TOKEN or TMDB_API_KEY in .env first.\\n')")
+            self._eval("window.appendLog('Missing TMDb credentials. Set TMDB_BEARER_TOKEN or TMDB_API_KEY in .env, or put .env in ~/Library/Application Support/Mediatag/.\\n')")
             self._eval("window.updateProgress(0, %d, 'Missing TMDb credentials', 0)" % len(files))
             return
 
