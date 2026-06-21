@@ -4,7 +4,7 @@ import subprocess
 import pytest
 from PIL import Image
 
-from movie_cover_tagger.media import embed_mp4_cover, normalize_poster
+from mediatag.media import embed_mp4_cover, normalize_poster
 
 
 @pytest.mark.skipif(shutil.which("ffmpeg") is None, reason="ffmpeg not installed")

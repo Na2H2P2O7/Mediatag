@@ -1,7 +1,7 @@
 from pathlib import Path
 
-from movie_cover_tagger.models import MovieMetadata
-from movie_cover_tagger.pipeline import process_one, safe_target_path
+from mediatag.models import MovieMetadata
+from mediatag.pipeline import process_one, safe_target_path
 
 
 def test_safe_target_path_adds_collision_suffix(tmp_path):
@@ -56,10 +56,10 @@ def test_process_one_success_with_mocked_media(tmp_path, monkeypatch):
     original = tmp_path / "火遮眼.2025.mp4"
     original.write_bytes(b"fake mp4")
 
-    monkeypatch.setattr("movie_cover_tagger.pipeline.download_image", lambda url: b"raw")
-    monkeypatch.setattr("movie_cover_tagger.pipeline.normalize_poster", lambda data: b"jpg")
-    monkeypatch.setattr("movie_cover_tagger.pipeline.embed_mp4_cover", lambda path, data: True)
-    monkeypatch.setattr("movie_cover_tagger.pipeline.apply_faststart", lambda path, ffmpeg="ffmpeg": True)
+    monkeypatch.setattr("mediatag.pipeline.download_image", lambda url: b"raw")
+    monkeypatch.setattr("mediatag.pipeline.normalize_poster", lambda data: b"jpg")
+    monkeypatch.setattr("mediatag.pipeline.embed_mp4_cover", lambda path, data: True)
+    monkeypatch.setattr("mediatag.pipeline.apply_faststart", lambda path, ffmpeg="ffmpeg": True)
 
     result = process_one(original, Client(), tmp_path / "covers")
 

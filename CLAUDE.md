@@ -1,10 +1,10 @@
 # CLAUDE.md
 
-This file gives Claude Code project-specific context for Movie Cover Tagger.
+This file gives Claude Code project-specific context for Mediatag.
 
 ## Project summary
 
-Movie Cover Tagger is a clean public Python project for batch-tagging movie MP4
+Mediatag is a clean public Python project for batch-tagging movie MP4
 files. It uses TMDb metadata, downloads poster art, embeds the poster into MP4
 metadata with Mutagen, and renames files into a clean library format such as:
 
@@ -16,7 +16,7 @@ metadata with Mutagen, and renames files into a clean library format such as:
 The app has both:
 
 - a PyWebView desktop GUI,
-- a CLI entry point via `movie-cover-tagger`.
+- a CLI entry point via `mediatag`.
 
 ## Development commands
 
@@ -30,8 +30,8 @@ pytest
 Run from source:
 
 ```bash
-movie-cover-tagger-gui
-movie-cover-tagger --dir "/path/to/movies" --yes
+mediatag-gui
+mediatag --dir "/path/to/movies" --yes
 ```
 
 Real TMDb calls require `TMDB_BEARER_TOKEN` or `TMDB_API_KEY` in `.env` or the

@@ -2,8 +2,8 @@ import os
 
 import pytest
 
-from movie_cover_tagger.models import ParsedMovieName
-from movie_cover_tagger.tmdb import TMDbClient
+from mediatag.models import ParsedMovieName
+from mediatag.tmdb import TMDbClient
 
 
 @pytest.mark.skipif(not os.getenv("TMDB_BEARER_TOKEN"), reason="TMDB_BEARER_TOKEN not set")

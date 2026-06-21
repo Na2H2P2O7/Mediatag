@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from movie_cover_tagger.parser import clean_filename_part, parse_movie_filename
+from mediatag.parser import clean_filename_part, parse_movie_filename
 
 
 def test_parse_english_release_name():

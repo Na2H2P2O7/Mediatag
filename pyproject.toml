@@ -3,7 +3,7 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "movie-cover-tagger"
+name = "mediatag"
 version = "0.1.0"
 description = "Batch tag MP4 movie files with TMDb posters and clean filenames."
 readme = "README.md"
@@ -28,14 +28,14 @@ dev = [
 ]
 
 [project.scripts]
-movie-cover-tagger = "movie_cover_tagger.cli:main"
-movie-cover-tagger-gui = "movie_cover_tagger.gui_app:main"
+mediatag = "mediatag.cli:main"
+mediatag-gui = "mediatag.gui_app:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
 [tool.setuptools.package-data]
-movie_cover_tagger = ["gui/*"]
+mediatag = ["gui/*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -1,6 +1,6 @@
-# Movie Cover Tagger
+# Mediatag
 
-Movie Cover Tagger is a small desktop and CLI tool for cleaning up movie MP4
+Mediatag is a small desktop and CLI tool for cleaning up movie MP4
 files. It looks up movie metadata on TMDb, downloads the poster, embeds it into
 the MP4 cover-art metadata, and renames the file into a clean library format.
 
@@ -45,7 +45,7 @@ TMDB_API_KEY=your_v3_api_key
 ## Run The Desktop App
 
 ```bash
-movie-cover-tagger-gui
+mediatag-gui
 ```
 
 The app reads TMDb credentials from `.env` or your environment.
@@ -55,19 +55,19 @@ The app reads TMDb credentials from `.env` or your environment.
 Process a directory:
 
 ```bash
-movie-cover-tagger --dir "/path/to/movies" --yes
+mediatag --dir "/path/to/movies" --yes
 ```
 
 Process specific files:
 
 ```bash
-movie-cover-tagger "/path/to/Movie.2025.1080p.mp4" --yes
+mediatag "/path/to/Movie.2025.1080p.mp4" --yes
 ```
 
 Skip FFmpeg faststart:
 
 ```bash
-movie-cover-tagger --dir "/path/to/movies" --yes --no-faststart
+mediatag --dir "/path/to/movies" --yes --no-faststart
 ```
 
 ## Notes
@@ -95,9 +95,9 @@ TMDB_BEARER_TOKEN=... pytest tests/test_tmdb_live.py
 The GitHub Actions workflow builds a macOS `.dmg` through PyInstaller. Locally:
 
 ```bash
-pyinstaller --noconfirm --windowed --name "Movie Cover Tagger" \
+pyinstaller --noconfirm --windowed --name "Mediatag" \
   --icon "assets/icon.icns" \
-  --add-data "src/movie_cover_tagger/gui:movie_cover_tagger/gui" \
+  --add-data "src/mediatag/gui:mediatag/gui" \
   --paths "src" \
-  movie_cover_tagger_app.py
+  mediatag_app.py
 ```

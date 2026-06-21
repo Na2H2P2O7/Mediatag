@@ -1,10 +1,10 @@
 # AGENTS.md
 
-This repository is the clean public version of Movie Cover Tagger.
+This repository is the clean public version of Mediatag.
 
 ## What this project is
 
-Movie Cover Tagger is a Python desktop and CLI tool that batch-processes local
+Mediatag is a Python desktop and CLI tool that batch-processes local
 movie MP4 files:
 
 - parses noisy release filenames,
@@ -39,13 +39,13 @@ pytest
 Run the GUI:
 
 ```bash
-movie-cover-tagger-gui
+mediatag-gui
 ```
 
 Run the CLI:
 
 ```bash
-movie-cover-tagger --dir "/path/to/movies" --yes
+mediatag --dir "/path/to/movies" --yes
 ```
 
 `TMDB_BEARER_TOKEN` or `TMDB_API_KEY` must be set in `.env` or the environment
@@ -53,15 +53,15 @@ before real TMDb lookups will work.
 
 ## Architecture
 
-- `src/movie_cover_tagger/parser.py` parses release filenames into title
+- `src/mediatag/parser.py` parses release filenames into title
   candidates and release year.
-- `src/movie_cover_tagger/tmdb.py` wraps TMDb search/detail/poster metadata.
-- `src/movie_cover_tagger/media.py` handles poster normalization, MP4 cover
+- `src/mediatag/tmdb.py` wraps TMDb search/detail/poster metadata.
+- `src/mediatag/media.py` handles poster normalization, MP4 cover
   embedding, and optional ffmpeg faststart.
-- `src/movie_cover_tagger/pipeline.py` ties parsing, lookup, embedding, saving,
+- `src/mediatag/pipeline.py` ties parsing, lookup, embedding, saving,
   and renaming together.
-- `src/movie_cover_tagger/gui_app.py` exposes the PyWebView bridge.
-- `src/movie_cover_tagger/gui/` is plain HTML/CSS/JS and intentionally mirrors
+- `src/mediatag/gui_app.py` exposes the PyWebView bridge.
+- `src/mediatag/gui/` is plain HTML/CSS/JS and intentionally mirrors
   the original app shell.
 
 ## Packaging notes
@@ -72,7 +72,7 @@ repair in `gui_app.py` so packaged apps can find ffmpeg when it is installed at
 
 PyInstaller builds should include:
 
-- `--add-data "src/movie_cover_tagger/gui:movie_cover_tagger/gui"`
+- `--add-data "src/mediatag/gui:mediatag/gui"`
 - `--paths "src"`
 - `--icon "assets/icon.icns"`
 

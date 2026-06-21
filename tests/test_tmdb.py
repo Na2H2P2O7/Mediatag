@@ -1,6 +1,6 @@
-from movie_cover_tagger.models import ParsedMovieName
-from movie_cover_tagger.tmdb import TMDbClient
-from movie_cover_tagger.config import TMDbCredentials
+from mediatag.models import ParsedMovieName
+from mediatag.tmdb import TMDbClient
+from mediatag.config import TMDbCredentials
 
 
 def test_tmdb_search_best_with_mocked_requests(monkeypatch, tmp_path):
@@ -52,7 +52,7 @@ def test_tmdb_search_best_with_mocked_requests(monkeypatch, tmp_path):
             }
         )
 
-    monkeypatch.setattr("movie_cover_tagger.tmdb.requests.get", fake_get)
+    monkeypatch.setattr("mediatag.tmdb.requests.get", fake_get)
     parsed = ParsedMovieName(tmp_path / "Inception.2010.mp4", 2010, ("Inception",))
 
     metadata = TMDbClient("token").search_best(parsed)
@@ -109,7 +109,7 @@ def test_tmdb_does_not_append_original_title_for_hong_kong_movie(monkeypatch, tm
             }
         )
 
-    monkeypatch.setattr("movie_cover_tagger.tmdb.requests.get", fake_get)
+    monkeypatch.setattr("mediatag.tmdb.requests.get", fake_get)
     parsed = ParsedMovieName(tmp_path / "Overheard.2009.mp4", 2009, ("Overheard",))
 
     metadata = TMDbClient("token").search_best(parsed)
@@ -119,7 +119,7 @@ def test_tmdb_does_not_append_original_title_for_hong_kong_movie(monkeypatch, tm
 
 
 def test_tmdb_does_not_append_original_title_for_japanese_movie():
-    from movie_cover_tagger.tmdb import _format_display_title
+    from mediatag.tmdb import _format_display_title
 
     assert (
         _format_display_title(
@@ -150,7 +150,7 @@ def test_tmdb_api_key_auth_uses_query_param(monkeypatch):
         seen["params"] = params
         return Response()
 
-    monkeypatch.setattr("movie_cover_tagger.tmdb.requests.get", fake_get)
+    monkeypatch.setattr("mediatag.tmdb.requests.get", fake_get)
 
     TMDbClient(TMDbCredentials(api_key="abc123"))._get("/search/movie", {"query": "Inception"})
 
@@ -175,7 +175,7 @@ def test_tmdb_bearer_auth_uses_authorization_header(monkeypatch):
         seen["params"] = params
         return Response()
 
-    monkeypatch.setattr("movie_cover_tagger.tmdb.requests.get", fake_get)
+    monkeypatch.setattr("mediatag.tmdb.requests.get", fake_get)
 
     TMDbClient(TMDbCredentials(bearer_token="token123"))._get("/search/movie", {"query": "Inception"})
 

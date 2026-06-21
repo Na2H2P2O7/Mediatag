@@ -28,28 +28,28 @@ jobs:
 
       - name: Build app
         run: |
-          pyinstaller --noconfirm --windowed --name "Movie Cover Tagger" \
+          pyinstaller --noconfirm --windowed --name "Mediatag" \
             --icon "assets/icon.icns" \
-            --add-data "src/movie_cover_tagger/gui:movie_cover_tagger/gui" \
+            --add-data "src/mediatag/gui:mediatag/gui" \
             --paths "src" \
-            --hidden-import movie_cover_tagger.gui_app \
-            --hidden-import movie_cover_tagger.pipeline \
-            --hidden-import movie_cover_tagger.tmdb \
-            --hidden-import movie_cover_tagger.media \
+            --hidden-import mediatag.gui_app \
+            --hidden-import mediatag.pipeline \
+            --hidden-import mediatag.tmdb \
+            --hidden-import mediatag.media \
             --hidden-import mutagen.mp4 \
             --hidden-import PIL.Image \
-            movie_cover_tagger_app.py
+            mediatag_app.py
 
       - name: Package DMG
         run: |
           cd dist
           mkdir dmg_folder
-          mv "Movie Cover Tagger.app" dmg_folder/
+          mv "Mediatag.app" dmg_folder/
           ln -s /Applications dmg_folder/Applications
-          hdiutil create -volname "Movie Cover Tagger" -srcfolder dmg_folder -ov -format UDZO MovieCoverTagger-macOS.dmg
+          hdiutil create -volname "Mediatag" -srcfolder dmg_folder -ov -format UDZO Mediatag-macOS.dmg
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: MovieCoverTagger-macOS
-          path: dist/MovieCoverTagger-macOS.dmg
+          name: Mediatag-macOS
+          path: dist/Mediatag-macOS.dmg

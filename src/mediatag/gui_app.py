@@ -71,9 +71,9 @@ class Api:
         return "OK"
 
     def start_batch(self) -> None:
-        self.start_javcover()
+        self.start_mediatag()
 
-    def start_javcover(self) -> None:
+    def start_mediatag(self) -> None:
         if not self._window:
             return
         files = self._window.create_file_dialog(
@@ -140,7 +140,7 @@ def main() -> None:
     gui_dir = Path(__file__).with_name("gui")
     url = (gui_dir / "index.html").resolve().as_uri()
     window = webview.create_window(
-        "MovieCover",
+        "Mediatag",
         url,
         js_api=api,
         width=737,
