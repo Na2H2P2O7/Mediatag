@@ -110,7 +110,7 @@ flowchart TD
 
 **中文**
 
-从 [Releases](https://github.com/Na2H2P2O7/Mediatag/releases) 下载 macOS `.dmg` 或 `.zip`。首次使用前，需要准备 TMDb API credential。
+从 [Releases](https://github.com/Na2H2P2O7/Mediatag/releases) 下载 macOS `.dmg` / `.zip`，或 Windows `.zip`。Windows 版本解压后运行 `Mediatag.exe`。首次使用前，需要准备 TMDb API credential。
 
 打包版 macOS app 推荐把 `.env` 放在这里：
 
@@ -130,7 +130,7 @@ TMDb API credential 可以在官方文档和设置页创建：<https://developer
 
 **EN**
 
-Download the macOS `.dmg` or `.zip` from [Releases](https://github.com/Na2H2P2O7/Mediatag/releases). Before first use, create a TMDb API credential.
+Download the macOS `.dmg` / `.zip` or Windows `.zip` from [Releases](https://github.com/Na2H2P2O7/Mediatag/releases). On Windows, unzip the package and run `Mediatag.exe`. Before first use, create a TMDb API credential.
 
 For the packaged macOS app, put `.env` here:
 
@@ -233,6 +233,7 @@ The GitHub Actions workflow also builds a macOS app artifact on push and tag.
 - `.env`、媒体文件、下载的 covers 和 build artifacts 都不会提交到 Git。
 - 桌面端 Liquid Glass 效果 vendor 了 MIT-licensed `dashersw/liquid-glass-js` 和 `html2canvas`。
 - 当前 macOS release 是 ad-hoc signed，尚未 Apple notarized；第一次打开时 macOS 可能会显示安全提示。
+- Windows 版本需要 Microsoft Edge WebView2 Runtime；大多数 Windows 10/11 机器已经自带。
 
 **EN**
 
@@ -240,3 +241,4 @@ The GitHub Actions workflow also builds a macOS app artifact on push and tag.
 - `.env`, media files, downloaded covers, and build artifacts are ignored by Git.
 - The desktop Liquid Glass effect vendors MIT-licensed code from `dashersw/liquid-glass-js` and `html2canvas`.
 - The current macOS release is ad-hoc signed but not Apple-notarized; macOS may show a security warning on first launch.
+- The Windows build requires Microsoft Edge WebView2 Runtime, which is already installed on most Windows 10/11 machines.
