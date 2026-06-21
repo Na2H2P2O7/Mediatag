@@ -217,6 +217,14 @@ The GitHub Actions workflow also builds a macOS app artifact on push and tag.
 
 ---
 
+## 许可证 / License
+
+**中文** - 本项目使用 MIT License。详见 [LICENSE](LICENSE)。
+
+**EN** - This project is released under the MIT License. See [LICENSE](LICENSE).
+
+---
+
 ## 说明 / Notes
 
 **中文**
