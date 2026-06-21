@@ -1,0 +1,69 @@
+from pathlib import Path
+
+from movie_cover_tagger.models import MovieMetadata
+from movie_cover_tagger.pipeline import process_one, safe_target_path
+
+
+def test_safe_target_path_adds_collision_suffix(tmp_path):
+    existing = tmp_path / "2025 火遮眼.mp4"
+    existing.write_text("x")
+
+    target = safe_target_path(tmp_path, "2025 火遮眼")
+
+    assert target.name == "2025 火遮眼 (1).mp4"
+
+
+def test_process_one_skips_unsupported_extension(tmp_path):
+    path = tmp_path / "Movie.2025.mkv"
+    path.write_bytes(b"not used")
+
+    result = process_one(path, client=object(), cover_dir=tmp_path)
+
+    assert result.status == "skipped"
+    assert "unsupported" in result.message
+
+
+def test_process_one_skips_low_confidence_match(tmp_path):
+    class Client:
+        def search_best(self, parsed):
+            return None
+
+    path = tmp_path / "Unknown.2025.mp4"
+    path.write_bytes(b"not an actual mp4")
+
+    result = process_one(path, Client(), tmp_path)
+
+    assert result.status == "skipped"
+    assert "no confident" in result.message
+
+
+def test_process_one_success_with_mocked_media(tmp_path, monkeypatch):
+    class Client:
+        def search_best(self, parsed):
+            return MovieMetadata(
+                tmdb_id=1,
+                year=2025,
+                chinese_title="火遮眼",
+                original_title="",
+                display_title="2025 火遮眼",
+                poster_path="/poster.jpg",
+                confidence=0.9,
+            )
+
+        def poster_url(self, poster_path):
+            return "https://image.tmdb.org/t/p/w780/poster.jpg"
+
+    original = tmp_path / "火遮眼.2025.mp4"
+    original.write_bytes(b"fake mp4")
+
+    monkeypatch.setattr("movie_cover_tagger.pipeline.download_image", lambda url: b"raw")
+    monkeypatch.setattr("movie_cover_tagger.pipeline.normalize_poster", lambda data: b"jpg")
+    monkeypatch.setattr("movie_cover_tagger.pipeline.embed_mp4_cover", lambda path, data: True)
+    monkeypatch.setattr("movie_cover_tagger.pipeline.apply_faststart", lambda path, ffmpeg="ffmpeg": True)
+
+    result = process_one(original, Client(), tmp_path / "covers")
+
+    assert result.status == "done"
+    assert result.new_path == tmp_path / "2025 火遮眼.mp4"
+    assert result.cover_path == tmp_path / "covers" / "2025 火遮眼.jpg"
+    assert result.new_path.exists()

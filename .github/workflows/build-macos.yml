@@ -1,0 +1,55 @@
+name: Build macOS App
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Test
+        run: pytest
+
+      - name: Build app
+        run: |
+          pyinstaller --noconfirm --windowed --name "Movie Cover Tagger" \
+            --icon "assets/icon.icns" \
+            --add-data "src/movie_cover_tagger/gui:movie_cover_tagger/gui" \
+            --paths "src" \
+            --hidden-import movie_cover_tagger.gui_app \
+            --hidden-import movie_cover_tagger.pipeline \
+            --hidden-import movie_cover_tagger.tmdb \
+            --hidden-import movie_cover_tagger.media \
+            --hidden-import mutagen.mp4 \
+            --hidden-import PIL.Image \
+            movie_cover_tagger_app.py
+
+      - name: Package DMG
+        run: |
+          cd dist
+          mkdir dmg_folder
+          mv "Movie Cover Tagger.app" dmg_folder/
+          ln -s /Applications dmg_folder/Applications
+          hdiutil create -volname "Movie Cover Tagger" -srcfolder dmg_folder -ov -format UDZO MovieCoverTagger-macOS.dmg
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: MovieCoverTagger-macOS
+          path: dist/MovieCoverTagger-macOS.dmg

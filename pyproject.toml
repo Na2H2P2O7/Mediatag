@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "movie-cover-tagger"
+version = "0.1.0"
+description = "Batch tag MP4 movie files with TMDb posters and clean filenames."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Jerome" }]
+dependencies = [
+  "mutagen>=1.47",
+  "Pillow>=10",
+  "pywebview>=5",
+  "requests>=2.31",
+  "python-dotenv>=1.0",
+  "pyobjc>=10; sys_platform == 'darwin'",
+  "pythonnet>=3; sys_platform == 'win32'",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8",
+  "responses>=0.25",
+  "pyinstaller>=6",
+]
+
+[project.scripts]
+movie-cover-tagger = "movie_cover_tagger.cli:main"
+movie-cover-tagger-gui = "movie_cover_tagger.gui_app:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+movie_cover_tagger = ["gui/*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
