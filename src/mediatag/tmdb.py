@@ -36,6 +36,34 @@ NO_ORIGINAL_TITLE_COUNTRIES = {
     "TH",
 }
 
+POSTER_LANGUAGE_BY_COUNTRY = {
+    "CN": ("zh", "cn", "yue", None, "en"),
+    "HK": ("zh", "cn", "yue", None, "en"),
+    "MO": ("zh", "cn", "yue", None, "en"),
+    "TW": ("zh", "cn", "yue", None, "en"),
+    "SG": ("zh", "cn", "en", None),
+    "MY": ("zh", "cn", "ms", "en", None),
+    "JP": ("ja", None, "en"),
+    "KR": ("ko", None, "en"),
+    "TH": ("th", None, "en"),
+    "US": ("en", None),
+    "GB": ("en", None),
+    "AU": ("en", None),
+    "CA": ("en", None),
+    "IE": ("en", None),
+    "NZ": ("en", None),
+}
+
+POSTER_LANGUAGE_BY_ORIGINAL_LANGUAGE = {
+    "zh": ("zh", "cn", "yue", None, "en"),
+    "cn": ("zh", "cn", "yue", None, "en"),
+    "yue": ("zh", "cn", "yue", None, "en"),
+    "ja": ("ja", None, "en"),
+    "ko": ("ko", None, "en"),
+    "th": ("th", None, "en"),
+    "en": ("en", None),
+}
+
 
 class TMDbError(RuntimeError):
     pass
@@ -79,23 +107,37 @@ class TMDbClient:
 
     def search_best(self, parsed: ParsedMovieName) -> MovieMetadata | None:
         for candidate in parsed.candidates:
-            result = self._search_candidate(candidate, parsed.year, "zh-CN")
+            result = self._search_candidate(candidate, parsed.year, "zh-CN", use_year_filter=True)
             if result:
                 return result
             if not has_han(candidate):
-                result = self._search_candidate(candidate, parsed.year, "en-US")
+                result = self._search_candidate(candidate, parsed.year, "en-US", use_year_filter=True)
+                if result:
+                    return result
+        for candidate in parsed.candidates:
+            result = self._search_candidate(candidate, parsed.year, "zh-CN", use_year_filter=False)
+            if result:
+                return result
+            if not has_han(candidate):
+                result = self._search_candidate(candidate, parsed.year, "en-US", use_year_filter=False)
                 if result:
                     return result
         return None
 
-    def _search_candidate(self, query: str, year: int | None, language: str) -> MovieMetadata | None:
+    def _search_candidate(
+        self,
+        query: str,
+        year: int | None,
+        language: str,
+        use_year_filter: bool,
+    ) -> MovieMetadata | None:
         params: dict[str, object] = {
             "query": query,
             "include_adult": "false",
             "language": language,
             "page": 1,
         }
-        if year:
+        if year and use_year_filter:
             params["year"] = year
             params["primary_release_year"] = year
 
@@ -118,7 +160,8 @@ class TMDbClient:
             f"/movie/{best['id']}",
             {
                 "language": "zh-CN",
-                "append_to_response": "translations",
+                "append_to_response": "translations,images",
+                "include_image_language": "en,null,zh,cn,yue,ja,ko,th,ms",
             },
         )
         movie_year = _year_from_date(details.get("release_date")) or year
@@ -133,6 +176,12 @@ class TMDbClient:
             str(country.get("iso_3166_1") or "").strip()
             for country in details.get("production_countries", [])
         ]
+        poster_path = _select_poster_path(
+            details,
+            fallback=best["poster_path"],
+            original_language=original_language,
+            production_countries=production_countries,
+        )
         display_title = _format_display_title(
             movie_year,
             chinese_title,
@@ -147,7 +196,7 @@ class TMDbClient:
             chinese_title=chinese_title or english_title,
             original_title=english_title,
             display_title=display_title,
-            poster_path=details.get("poster_path") or best["poster_path"],
+            poster_path=poster_path,
             confidence=confidence,
         )
 
@@ -224,3 +273,41 @@ def _should_append_original_title(
     if countries & NO_ORIGINAL_TITLE_COUNTRIES:
         return False
     return True
+
+
+def _select_poster_path(
+    details: dict,
+    fallback: str,
+    original_language: str,
+    production_countries: list[str] | tuple[str, ...],
+) -> str:
+    posters = details.get("images", {}).get("posters") or []
+    if not posters:
+        return details.get("poster_path") or fallback
+
+    language_priority = _poster_language_priority(original_language, production_countries)
+    priority_index = {language: index for index, language in enumerate(language_priority)}
+
+    def score(poster: dict) -> tuple[int, float, float]:
+        language = poster.get("iso_639_1")
+        priority = priority_index.get(language, len(language_priority))
+        vote_average = float(poster.get("vote_average") or 0)
+        vote_count = float(poster.get("vote_count") or 0)
+        return (-priority, vote_average, vote_count)
+
+    selected = max(posters, key=score)
+    return selected.get("file_path") or details.get("poster_path") or fallback
+
+
+def _poster_language_priority(
+    original_language: str,
+    production_countries: list[str] | tuple[str, ...],
+) -> tuple[str | None, ...]:
+    for country in production_countries:
+        country_key = country.strip().upper()
+        if country_key in POSTER_LANGUAGE_BY_COUNTRY:
+            return POSTER_LANGUAGE_BY_COUNTRY[country_key]
+    language_key = original_language.strip().lower()
+    if language_key in POSTER_LANGUAGE_BY_ORIGINAL_LANGUAGE:
+        return POSTER_LANGUAGE_BY_ORIGINAL_LANGUAGE[language_key]
+    return (None, "en", "zh")

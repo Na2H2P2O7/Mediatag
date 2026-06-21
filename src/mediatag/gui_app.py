@@ -11,6 +11,7 @@ from pathlib import Path
 import webview
 
 from .config import TMDbCredentials, default_cover_dir, load_tmdb_credentials
+from .media import remove_mp4_cover
 from .pipeline import process_files
 
 
@@ -85,7 +86,7 @@ class Api:
             return
         threading.Thread(target=self._run_batch, args=(files, True), daemon=True).start()
 
-    def start_manual(self) -> None:
+    def start_remove_cover(self) -> None:
         if not self._window:
             return
         files = self._window.create_file_dialog(
@@ -95,7 +96,7 @@ class Api:
         )
         if not files:
             return
-        threading.Thread(target=self._run_batch, args=(files, False), daemon=True).start()
+        threading.Thread(target=self._run_remove_cover, args=(files,), daemon=True).start()
 
     def _run_batch(self, files: list[str], run_faststart: bool) -> None:
         self._eval("window.resetUi()")
@@ -126,6 +127,35 @@ class Api:
             run_faststart=run_faststart,
         )
         self._eval("window.updateProgress(%d, %d, 'All done.', 100)" % (len(files), len(files)))
+
+    def _run_remove_cover(self, files: list[str]) -> None:
+        self._eval("window.resetUi()")
+        total = len(files)
+        for index, file in enumerate(files, start=1):
+            path = Path(file)
+            self._eval(
+                "window.updateProgress(%d, %d, %s, 20)"
+                % (index - 1, total, json.dumps(f"Removing cover: {path.name}"))
+            )
+            if path.suffix.lower() != ".mp4":
+                message = f"{path.name}: unsupported in v1 (MP4 only)"
+            else:
+                try:
+                    removed = remove_mp4_cover(path)
+                    message = (
+                        f"{path.name}: cover removed"
+                        if removed
+                        else f"{path.name}: no embedded cover found"
+                    )
+                    self._eval("window.setCover('')")
+                except Exception as exc:
+                    message = f"{path.name}: failed to remove cover: {exc}"
+            self._eval("window.appendLog(%s)" % json.dumps(message + "\n"))
+            self._eval(
+                "window.updateProgress(%d, %d, %s, 100)"
+                % (index, total, json.dumps(message))
+            )
+        self._eval("window.updateProgress(%d, %d, 'All done.', 100)" % (total, total))
 
     def _eval(self, script: str) -> None:
         if self._window:

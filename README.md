@@ -10,6 +10,7 @@ the MP4 cover-art metadata, and renames the file into a clean library format.
 - Automatically search TMDb by parsed title and release year.
 - Save downloaded posters to a local `covers/` folder.
 - Embed poster art into MP4 metadata with Mutagen.
+- Remove existing MP4 cover art for repeat testing.
 - Rename files into a clean format:
   - Chinese title only: `2025 火遮眼.mp4`
   - Chinese + original title: `2010 盗梦空间 Inception.mp4`
@@ -20,7 +21,9 @@ the MP4 cover-art metadata, and renames the file into a clean library format.
 
 - Python 3.10+
 - A TMDb API read access token
-- Optional: FFmpeg for MP4 faststart optimization
+- FFmpeg for MP4 faststart optimization. Packaged macOS apps include a bundled
+  FFmpeg executable; source installs use the bundled `imageio-ffmpeg` binary or
+  a system FFmpeg when available.
 
 Create TMDb API credentials from the official TMDb API settings page:
 <https://developer.themoviedb.org/docs/authentication-application>
@@ -77,6 +80,8 @@ mediatag --dir "/path/to/movies" --yes --no-faststart
   `Overheard.3.2014.BluRay.1080p.x265.10bit.2Audio.mp4`.
 - `.env`, media files, downloaded covers, and build artifacts are ignored by
   git.
+- The desktop Liquid Glass effect vendors MIT-licensed code from
+  `dashersw/liquid-glass-js` and `html2canvas`.
 
 ## Development
 
@@ -92,12 +97,9 @@ TMDB_BEARER_TOKEN=... pytest tests/test_tmdb_live.py
 
 ## Build macOS App
 
-The GitHub Actions workflow builds a macOS `.dmg` through PyInstaller. Locally:
+The GitHub Actions workflow builds a macOS `.dmg` through PyInstaller and
+bundles FFmpeg through `imageio-ffmpeg`. Locally:
 
 ```bash
-pyinstaller --noconfirm --windowed --name "Mediatag" \
-  --icon "assets/icon.icns" \
-  --add-data "src/mediatag/gui:mediatag/gui" \
-  --paths "src" \
-  mediatag_app.py
+python -m PyInstaller --noconfirm Mediatag.spec
 ```

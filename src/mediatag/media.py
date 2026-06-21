@@ -11,6 +11,8 @@ import requests
 from mutagen.mp4 import MP4, MP4Cover
 from PIL import Image
 
+POSTER_TARGET_HEIGHT = 538
+
 
 def download_image(url: str, timeout: int = 30) -> bytes:
     response = requests.get(url, timeout=timeout)
@@ -21,6 +23,10 @@ def download_image(url: str, timeout: int = 30) -> bytes:
 def normalize_poster(image_data: bytes) -> bytes:
     with Image.open(io.BytesIO(image_data)) as img:
         img = img.convert("RGB")
+        width, height = img.size
+        if height != POSTER_TARGET_HEIGHT:
+            target_width = max(1, round(width * POSTER_TARGET_HEIGHT / height))
+            img = img.resize((target_width, POSTER_TARGET_HEIGHT), Image.Resampling.LANCZOS)
         output = io.BytesIO()
         img.save(output, format="JPEG", quality=94, optimize=True)
         return output.getvalue()
@@ -40,6 +46,17 @@ def embed_mp4_cover(mp4_path: Path, image_data: bytes) -> bool:
 
     verify = MP4(mp4_path)
     return "covr" in verify and bool(verify["covr"])
+
+
+def remove_mp4_cover(mp4_path: Path) -> bool:
+    video = MP4(mp4_path)
+    if "covr" not in video:
+        return False
+    del video["covr"]
+    video.save()
+
+    verify = MP4(mp4_path)
+    return "covr" not in verify
 
 
 def apply_faststart(mp4_path: Path, ffmpeg: str = "ffmpeg") -> bool:

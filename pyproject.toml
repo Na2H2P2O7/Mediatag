@@ -16,6 +16,7 @@ dependencies = [
   "pywebview>=5",
   "requests>=2.31",
   "python-dotenv>=1.0",
+  "imageio-ffmpeg>=0.5.1",
   "pyobjc>=10; sys_platform == 'darwin'",
   "pythonnet>=3; sys_platform == 'win32'",
 ]
@@ -35,7 +36,7 @@ mediatag-gui = "mediatag.gui_app:main"
 where = ["src"]
 
 [tool.setuptools.package-data]
-mediatag = ["gui/*"]
+mediatag = ["gui/*", "gui/vendor/**/*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

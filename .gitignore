@@ -8,6 +8,7 @@ __pycache__/
 build/
 dist/
 *.spec
+!Mediatag.spec
 *.mp4
 *.mkv
 *.avi

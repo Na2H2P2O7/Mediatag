@@ -4,13 +4,14 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
+    tags: ["v*"]
 
 jobs:
-  build:
-    runs-on: macos-latest
+  build-macos:
+    runs-on: macos-14
 
     steps:
-      - name: Checkout
+      - name: Check out repository
         uses: actions/checkout@v4
 
       - name: Set up Python
@@ -21,35 +22,24 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -e ".[dev]"
+          python -m pip install -e ".[dev]"
 
-      - name: Test
-        run: pytest
+      - name: Run tests
+        run: python -m pytest -q
 
       - name: Build app
-        run: |
-          pyinstaller --noconfirm --windowed --name "Mediatag" \
-            --icon "assets/icon.icns" \
-            --add-data "src/mediatag/gui:mediatag/gui" \
-            --paths "src" \
-            --hidden-import mediatag.gui_app \
-            --hidden-import mediatag.pipeline \
-            --hidden-import mediatag.tmdb \
-            --hidden-import mediatag.media \
-            --hidden-import mutagen.mp4 \
-            --hidden-import PIL.Image \
-            mediatag_app.py
+        run: python -m PyInstaller --noconfirm Mediatag.spec
 
-      - name: Package DMG
-        run: |
-          cd dist
-          mkdir dmg_folder
-          mv "Mediatag.app" dmg_folder/
-          ln -s /Applications dmg_folder/Applications
-          hdiutil create -volname "Mediatag" -srcfolder dmg_folder -ov -format UDZO Mediatag-macOS.dmg
+      - name: Package zip
+        run: ditto -c -k --sequesterRsrc --keepParent dist/Mediatag.app dist/Mediatag-macOS.zip
 
-      - name: Upload artifact
+      - name: Package dmg
+        run: hdiutil create -volname "Mediatag" -srcfolder dist/Mediatag.app -ov -format UDZO dist/Mediatag-macOS.dmg
+
+      - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: Mediatag-macOS
-          path: dist/Mediatag-macOS.dmg
+          path: |
+            dist/Mediatag-macOS.zip
+            dist/Mediatag-macOS.dmg

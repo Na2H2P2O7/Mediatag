@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import platform
+import shutil
+import sys
 from pathlib import Path
 from typing import Callable, Iterable
 
@@ -15,9 +17,11 @@ LogCallback = Callable[[str], None]
 CoverCallback = Callable[[Path], None]
 
 
-def safe_target_path(directory: Path, stem: str) -> Path:
+def safe_target_path(directory: Path, stem: str, current_path: Path | None = None) -> Path:
     clean = clean_filename_part(stem)
     candidate = directory / f"{clean}.mp4"
+    if current_path is not None and candidate.resolve() == current_path.resolve():
+        return current_path
     index = 1
     while candidate.exists():
         candidate = directory / f"{clean} ({index}).mp4"
@@ -79,10 +83,6 @@ def process_one(
     if cover:
         cover(cover_path)
 
-    if not embed_mp4_cover(path, poster):
-        return ProcessResult(path, "error", f"{path.name}: poster embed verification failed")
-    _log(log, f"{path.name}: poster embedded")
-
     if run_faststart:
         ffmpeg = _default_ffmpeg()
         if apply_faststart(path, ffmpeg=ffmpeg):
@@ -90,23 +90,71 @@ def process_one(
         else:
             _log(log, f"{path.name}: faststart skipped or ffmpeg unavailable")
 
-    target = safe_target_path(path.parent, metadata.display_title)
-    path.rename(target)
+    if not embed_mp4_cover(path, poster):
+        return ProcessResult(path, "error", f"{path.name}: poster embed verification failed")
+    _log(log, f"{path.name}: poster embedded")
+
+    target = safe_target_path(path.parent, metadata.display_title, current_path=path)
+    if target != path:
+        path.rename(target)
     return ProcessResult(
         path,
         "done",
-        f"{path.name} -> {target.name}",
+        f"{path.name} -> {target.name}" if target != path else f"{path.name}: cover updated",
         new_path=target,
         cover_path=cover_path,
     )
 
 
 def _default_ffmpeg() -> str:
+    bundled = _bundled_ffmpeg()
+    if bundled is not None:
+        return str(bundled)
+
+    try:
+        import imageio_ffmpeg
+
+        return imageio_ffmpeg.get_ffmpeg_exe()
+    except Exception:
+        pass
+
     if platform.system() == "Darwin":
         for candidate in ("/opt/homebrew/bin/ffmpeg", "/usr/local/bin/ffmpeg"):
             if Path(candidate).exists():
                 return candidate
-    return "ffmpeg"
+
+    return shutil.which("ffmpeg") or "ffmpeg"
+
+
+def _bundled_ffmpeg() -> Path | None:
+    names = ("ffmpeg", "ffmpeg.exe")
+    roots: list[Path] = []
+    meipass = getattr(sys, "_MEIPASS", None)
+    if meipass:
+        roots.append(Path(meipass))
+
+    if getattr(sys, "frozen", False):
+        executable = Path(sys.executable).resolve()
+        roots.extend(
+            [
+                executable.parent,
+                executable.parent.parent,
+                executable.parent.parent / "Resources",
+                executable.parent.parent / "Frameworks",
+                executable.parent / "_internal",
+            ]
+        )
+
+    for root in roots:
+        for name in names:
+            direct = root / name
+            if direct.exists():
+                return direct
+        for name in names:
+            matches = list(root.rglob(name)) if root.exists() else []
+            if matches:
+                return matches[0]
+    return None
 
 
 def _log(callback: LogCallback | None, message: str) -> None:
